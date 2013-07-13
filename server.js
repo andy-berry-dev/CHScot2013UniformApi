@@ -15,6 +15,12 @@ var pjson = require('./package.json');
 var apiVersion = pjson.version;
 var dataUrl = "/data/"+apiVersion
 
+app.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "X-Requested-With");
+	next();
+});
+
 app.get( '/', api.root );
 app.get( dataUrl+"/", function(req,res){api.viewAllDatasets(req,res);} );
 app.get( dataUrl+"/:dataset/", function(req,res){api.viewDataset(req,res);} );

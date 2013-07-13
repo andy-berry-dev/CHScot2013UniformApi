@@ -16,6 +16,7 @@ var apiVersion = pjson.version;
 var dataUrl = "/data/"+apiVersion
 
 app.get( '/', api.root );
+app.get( dataUrl+"/:dataset/", api.lookupValue );
 app.get( dataUrl+"/:dataset/:field/:value/", api.lookupValue );
 
 app.listen(process.env.PORT || 8080);

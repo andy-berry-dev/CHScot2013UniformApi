@@ -2,6 +2,8 @@
 var url = require("url");
 var http = require("http");
 
+var util = require('util');
+
 var dataSources = {
 	"ad_contributors"					: 	"http://chs2013.herokuapp.com/ad_contributors.json",
 	"ad_tweets"							: 	"http://chs2013.herokuapp.com/ad_tweets.json",
@@ -24,33 +26,45 @@ exports.root = function(req, res)
 	res.send('CHScot2013 Uniform API Version '+apiVersion);
 };
 
-exports.lookupValue = function(req, res) {
-	res.type('text/plain');
-	
+exports.lookupValue = function(req, res) {	
+
+	var dataset = req.params.dataset;
+	var field = req.params.field;
+	var value = req.params.value;
+
 	var datasourceUrl = dataSources[ req.params.dataset ];
 	if (datasourceUrl == null) {
 		res.send('Invaid dataset', 404);
 	}
 
 	datasourceUrl = url.parse(datasourceUrl)
+	
 	var options = {
 		host: datasourceUrl.host,
 		port: 80,
 		path: datasourceUrl.pathname
 	};
 
-	http.request(options, function(res) {
-		console.log('STATUS: ' + res.statusCode);
-		console.log('HEADERS: ' + JSON.stringify(res.headers));
-		res.setEncoding('utf8');
-		res.on('data', function (chunk) {
-			console.log('BODY: ' + chunk);
+	util.debug('Making datasource request to: ' + datasourceUrl);
+
+	var callback = function(dsRes) {
+		var dsResData = "";
+		dsRes.on('data', function (chunk) {
+			dsResData += chunk;
 		});
-	}).on('error', function(e) {
-		console.log("Got error: " + e.message);
-	}).end();
+		dsRes.on('end', function () {
+			console.log(dsResData);
+			res.writeHead(200, { 'Content-Type': 'application/json' });
+			res.write(dsResData);
+			res.end();
+		});
+		dsRes.on('error', function () {
+			res.send('Error communicating with source dataset', 501);
+		});
+	}
 
-
-	res.send(req.params.dataset + " " + req.params.field + " " + req.params.value);
+	http.request(options, callback).end();
 
 }
+
+

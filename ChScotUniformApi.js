@@ -21,7 +21,7 @@ var ChScotUniformApi = function() {
 		"summerhall_events"					: 	"http://chs2013.herokuapp.com/summerhall_events.json?per_page=999999999",
 		"glasgow_cultural_organisations"	: 	"http://chs2013.herokuapp.com/glasgow_cultural_organisations.json?per_page=999999999"
 	};
-
+	this.cachedResponses = {};
 }
 
 ChScotUniformApi.prototype.root = function(req, res)
@@ -107,22 +107,16 @@ ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res)
 	var _this = this;
 	var concatenateDatasets = function(error, response, body) 
 	{
-		util.debug("Got response from " + response.request.href + " - " + response.statusCode);
-		if (!error && response.statusCode == 200) {
-
-			var datasetKey = dataSourcesReverseLookup[response.request.href];
-			if (datasetId == null) 
-			{
-				res.send('Unable to find dataset key for response', 501);
-			}
-
-			var jsonBody = body;
-			var oJson = JSON.parse(jsonBody);
-			responseJson[datasetKey] = oJson[datasetKey];
-			numberOfResponsesRecieved++;
-		} else {
-			res.send('Error communicating with source dataset ('+response.statusCode + " - "+error+')', 501);
+		var datasetKey = dataSourcesReverseLookup[response.request.href];
+		if (datasetId == null) 
+		{
+			res.send('Unable to find dataset key for response', 501);
 		}
+
+		var jsonBody = body;
+		var oJson = JSON.parse(jsonBody);
+		responseJson[datasetKey] = oJson[datasetKey];
+		numberOfResponsesRecieved++;
 
 		if (numberOfResponsesRecieved == numberOfDatasets) 
 		{
@@ -134,10 +128,52 @@ ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res)
 
 	for (var datasetId in dataSources){
 		var datasetUrl = this._getDatasourceRequestUrl(dataSources,datasetId, res);
-		util.debug("Requesting " + datasetUrl);
-		request(datasetUrl, concatenateDatasets);
+		this._doRequest(res, datasetUrl, concatenateDatasets);
 	}
 }
+
+ChScotUniformApi.prototype._doRequest = function(res, url, callback)
+{
+	var _this = this;
+	var cacheResponseCallback = function(error, response, body)
+	{
+		_this._checkAndHandleRequestError(error,response,body,res);
+		var etag = response.headers['etag'];
+		var hasValidCachedResponse = false;
+		if (etag != null) 
+		{
+			var cachedResponseObj = _this.cachedResponses[url];
+			if (cachedResponseObj != null && cachedResponseObj["etag"] == etag) {
+				hasValidCachedResponse = true;
+				util.debug("Valid cached response for " + url + " using cached content.");
+				callback(cachedResponseObj["error"], cachedResponseObj["response"], cachedResponseObj["body"]);
+			}
+		}
+		if (!hasValidCachedResponse) {
+			util.debug("No valid cached response");
+			util.debug("Doing GET for " + url);
+			request.get(url, function(error,response,body) {
+				_this._checkAndHandleRequestError(error,response,body,res);
+				util.debug("Got response from " + response.request.href + " - " + response.statusCode);
+				var etag = response.headers['etag'];
+				_this.cachedResponses[url] = {"etag":etag,"error":error,"response":response,"body":body};
+				callback(error, response, body);
+			});	
+		}
+	}
+	util.debug("Doing HEAD for " + url);
+	request.head(url, cacheResponseCallback);
+}
+
+ChScotUniformApi.prototype._checkAndHandleRequestError = function(error,response,body,res)
+{
+	if (error || response.statusCode != 200) {	
+		res.send('Error communicating with source data ('+response.statusCode + " - "+error+')', 501);
+	}
+}
+
+
+//callback(error,response,body);
 
 module.exports = ChScotUniformApi;
 

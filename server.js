@@ -18,7 +18,8 @@ var dataUrl = "/data/"+apiVersion
 app.get( '/', api.root );
 app.get( dataUrl+"/", function(req,res){api.viewAllDatasets(req,res);} );
 app.get( dataUrl+"/:dataset/", function(req,res){api.viewDataset(req,res);} );
-app.get( dataUrl+"/:dataset/q/:searchTerm", function(req,res){api.doSearch(req,res);} );
+app.get( dataUrl+"/q/:searchTerm", function(req,res){api.doSearch(req,res);} );
+app.get( dataUrl+"/:dataset/q/:searchTerm", function(req,res){api.doSingleDatasetSearch(req,res);} );
 
 
 

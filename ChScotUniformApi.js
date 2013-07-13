@@ -48,9 +48,13 @@ ChScotUniformApi.prototype.viewDataset = function(req, res)
 
 ChScotUniformApi.prototype.doSearch  = function(req, res)
 {
-	this.viewAllDatasets(req.res);
+	this.viewAllDatasets(req,res);
 }
 
+ChScotUniformApi.prototype.doSingleDatasetSearch  = function(req, res)
+{
+	this.viewDataset(req,res);
+}
 
 ChScotUniformApi.prototype._getDatasourceRequestUrl = function(dataSources,dataset,res)
 {

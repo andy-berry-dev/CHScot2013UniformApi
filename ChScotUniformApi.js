@@ -23,13 +23,6 @@ var ChScotUniformApi = function() {
 		"glasgow_cultural_organisations"	: 	"http://chs2013.herokuapp.com/glasgow_cultural_organisations.json?per_page=999999999"
 	};
 
-	this.dataSourcesReverseLookup = {}
-
-	for (key in this.dataSources) {
-		var value = this.dataSources[key];
-		this.dataSourcesReverseLookup[ value ] = key;
-    }
-
 }
 
 ChScotUniformApi.prototype.root = function(req, res)
@@ -41,11 +34,46 @@ ChScotUniformApi.prototype.root = function(req, res)
 
 ChScotUniformApi.prototype.viewAllDatasets = function(req, res)
 {
+	this._doDatasetRequest(this.dataSources, res)	
+}
+
+ChScotUniformApi.prototype.viewDataset = function(req, res)
+{
+	var dataset = req.params.dataset;
+	var requestUrl = this._getDatasourceRequestUrl(this.dataSources, dataset, res);
+	var singleDatasetMap = {};
+	singleDatasetMap[dataset] = requestUrl;
+	this._doDatasetRequest( singleDatasetMap, res);
+}
+
+ChScotUniformApi.prototype.doSearch  = function(req, res)
+{
+	this.viewAllDatasets(req.res);
+}
+
+
+ChScotUniformApi.prototype._getDatasourceRequestUrl = function(dataSources,dataset,res)
+{
+	var datasourceUrl = dataSources[ dataset ];
+	if (datasourceUrl == null) {
+		res.send('Invaid dataset', 404);
+	}
+	return datasourceUrl;
+}
+
+ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res)
+{
 	var numberOfDatasets = 0;
 	var numberOfResponsesRecieved = 0;
 
-    for (key in this.dataSources) {
-        if (this.dataSources.hasOwnProperty(key)) numberOfDatasets++;
+    for (key in dataSources) {
+        if (dataSources.hasOwnProperty(key)) numberOfDatasets++;
+    }
+
+    dataSourcesReverseLookup = {}
+	for (key in dataSources) {
+		var value = dataSources[key];
+		dataSourcesReverseLookup[ value ] = key;
     }
 
 	var responseJson = {};
@@ -55,7 +83,8 @@ ChScotUniformApi.prototype.viewAllDatasets = function(req, res)
 	{
 		util.debug("Got response from " + response.request.href + " - " + response.statusCode);
 		if (!error && response.statusCode == 200) {
-			var datasetKey = _this.dataSourcesReverseLookup[response.request.href];
+
+			var datasetKey = dataSourcesReverseLookup[response.request.href];
 			if (datasetId == null) 
 			{
 				res.send('Unable to find dataset key for response', 501);
@@ -77,40 +106,11 @@ ChScotUniformApi.prototype.viewAllDatasets = function(req, res)
 
 	}
 
-	for (var datasetId in this.dataSources){
-		var datasetUrl = this._getDatasourceRequestUrl(datasetId);
+	for (var datasetId in dataSources){
+		var datasetUrl = this._getDatasourceRequestUrl(dataSources,datasetId, res);
 		util.debug("Requesting " + datasetUrl);
 		request(datasetUrl, concatenateDatasets);
 	}
-}
-
-ChScotUniformApi.prototype.viewDataset = function(req, res)
-{
-	var requestUrl = this._getDatasourceRequestUrl(req.params.dataset, res);
-	request(requestUrl, function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			res.writeHead(200, { 'Content-Type': 'application/json' });
-			res.write(body);
-			res.end();
-		} else {
-			res.send('Error communicating with source dataset', 501);
-		}
-	});
-}
-
-ChScotUniformApi.prototype.doSearch  = function(req, res)
-{
-
-}
-
-
-ChScotUniformApi.prototype._getDatasourceRequestUrl = function(dataset,res)
-{
-	var datasourceUrl = this.dataSources[ dataset ];
-	if (datasourceUrl == null) {
-		res.send('Invaid dataset', 404);
-	}
-	return datasourceUrl;
 }
 
 module.exports = ChScotUniformApi;

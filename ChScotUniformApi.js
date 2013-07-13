@@ -17,7 +17,6 @@ var ChScotUniformApi = function() {
 		"gss_members"						: 	"http://chs2013.herokuapp.com/gss_members.json?per_page=999999999",
 		"ps_plays"							: 	"http://chs2013.herokuapp.com/ps_plays.json?per_page=999999999",
 		"rcs_paintings"						: 	"http://chs2013.herokuapp.com/rcs_paintings.json?per_page=999999999",
-		"smc_compositions"					: 	"http://chs2013.herokuapp.com/smc_compositions.json?per_page=999999999",
 		"isle_birds"						: 	"http://chs2013.herokuapp.com/isle_birds.json?per_page=999999999",
 		"summerhall_events"					: 	"http://chs2013.herokuapp.com/summerhall_events.json?per_page=999999999",
 		"glasgow_cultural_organisations"	: 	"http://chs2013.herokuapp.com/glasgow_cultural_organisations.json?per_page=999999999"
@@ -39,22 +38,36 @@ ChScotUniformApi.prototype.viewAllDatasets = function(req, res)
 
 ChScotUniformApi.prototype.viewDataset = function(req, res)
 {
-	var dataset = req.params.dataset;
-	var requestUrl = this._getDatasourceRequestUrl(this.dataSources, dataset, res);
-	var singleDatasetMap = {};
-	singleDatasetMap[dataset] = requestUrl;
+	var singleDatasetMap = this._getDatasourceFromRequest(req,res);
 	this._doDatasetRequest( singleDatasetMap, res);
 }
 
 ChScotUniformApi.prototype.doSearch  = function(req, res)
 {
-	this.viewAllDatasets(req,res);
+	var datasetMap = this._appendQueryUrlToDatasets(this.dataSources,req);
+	this._doDatasetRequest( datasetMap, res);
 }
 
 ChScotUniformApi.prototype.doSingleDatasetSearch  = function(req, res)
 {
-	this.viewDataset(req,res);
+	var singleDatasetMap = this._getDatasourceFromRequest(req,res);
+	singleDatasetMap = this._appendQueryUrlToDatasets(singleDatasetMap,req);
+	this._doDatasetRequest( singleDatasetMap, res);
 }
+
+
+
+ChScotUniformApi.prototype._appendQueryUrlToDatasets = function(dataSources,req)
+{
+	var queryString = req.params.searchTerm;
+	var datasetsWithQueryString = {};
+	for (key in dataSources) {
+		var value = dataSources[key];
+		datasetsWithQueryString[ key ] = value+"&q="+queryString;
+    }
+    return datasetsWithQueryString;
+}
+
 
 ChScotUniformApi.prototype._getDatasourceRequestUrl = function(dataSources,dataset,res)
 {
@@ -63,6 +76,15 @@ ChScotUniformApi.prototype._getDatasourceRequestUrl = function(dataSources,datas
 		res.send('Invaid dataset', 404);
 	}
 	return datasourceUrl;
+}
+
+ChScotUniformApi.prototype._getDatasourceFromRequest = function(req,res)
+{
+	var dataset = req.params.dataset;
+	var requestUrl = this._getDatasourceRequestUrl(this.dataSources, dataset, res);
+	var singleDatasetMap = {};
+	singleDatasetMap[dataset] = requestUrl;
+	return singleDatasetMap;
 }
 
 ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res)

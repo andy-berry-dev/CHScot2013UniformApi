@@ -20,6 +20,8 @@ var dataSources = {
 	"glasgow_cultural_organisations"	: 	"http://chs2013.herokuapp.com/glasgow_cultural_organisations.json"
 };
 
+var apiVersion = require('./package.json').version;
+
 exports.root = function(req, res)
 {
 	res.type('text/plain');

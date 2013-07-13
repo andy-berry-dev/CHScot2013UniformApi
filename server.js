@@ -16,6 +16,7 @@ var apiVersion = pjson.version;
 var dataUrl = "/data/"+apiVersion
 
 app.get( '/', api.root );
+app.get( dataUrl+"/", function(req,res){api.viewAllDatasets(req,res);} );
 app.get( dataUrl+"/:dataset/", function(req,res){api.viewDataset(req,res);} );
 
 

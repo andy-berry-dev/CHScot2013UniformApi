@@ -26,9 +26,11 @@ app.get( dataUrl+"/", function(req,res){api.viewAllDatasets(req,res);} );
 app.get( dataUrl+"/:dataset/", function(req,res){api.viewDataset(req,res);} );
 app.get( dataUrl+"/q/:searchTerm", function(req,res){api.doSearch(req,res);} );
 app.get( dataUrl+"/:dataset/q/:searchTerm", function(req,res){api.doSingleDatasetSearch(req,res);} );
+app.get( dataUrl+"/:dataset/:field/:value/", function(req,res){api.lookupValue(req,res);} );
 
 
-
-//app.get( dataUrl+"/:dataset/:field/:value/", api.lookupValue );
+//
+/* add __summary **/
+/* add __dsName **/
 
 app.listen(process.env.PORT || 8080);

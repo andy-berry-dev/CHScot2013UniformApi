@@ -55,6 +55,12 @@ ChScotUniformApi.prototype.doSingleDatasetSearch  = function(req, res)
 	this._doDatasetRequest( singleDatasetMap, res);
 }
 
+ChScotUniformApi.prototype.lookupValue  = function(req, res)
+{
+	var singleDatasetMap = this._getDatasourceFromRequest(req,res);
+	this._doDatasetRequestForKeyValuePair( singleDatasetMap, res, req.params.field, req.params.value);
+}
+
 
 
 ChScotUniformApi.prototype._appendQueryUrlToDatasets = function(dataSources,req)
@@ -89,6 +95,12 @@ ChScotUniformApi.prototype._getDatasourceFromRequest = function(req,res)
 
 ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res)
 {
+	this._doDatasetRequestForKeyValuePair(dataSources,res,null,null);
+}
+
+
+ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSources,res,key,value)
+{
 	var numberOfDatasets = 0;
 	var numberOfResponsesRecieved = 0;
 
@@ -120,6 +132,8 @@ ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res)
 
 		if (numberOfResponsesRecieved == numberOfDatasets) 
 		{
+			
+
 			res.write( JSON.stringify(responseJson) );
 			res.end();
 		}
@@ -173,7 +187,6 @@ ChScotUniformApi.prototype._checkAndHandleRequestError = function(error,response
 }
 
 
-//callback(error,response,body);
 
 module.exports = ChScotUniformApi;
 

@@ -51,13 +51,15 @@ ChScotUniformApi.prototype.viewDataset = function(req, res)
 ChScotUniformApi.prototype.doSearch  = function(req, res)
 {
 	var datasetMap = this._appendQueryUrlToDatasets(this.dataSources,req);
-	this._doDatasetRequest( datasetMap, res, req.params.searchTerm);
+	var searchTerm = decodeURIComponent( req.params.searchTerm );
+	this._doDatasetRequest( datasetMap, res, searchTerm);
 }
 
 ChScotUniformApi.prototype.doSingleDatasetSearch  = function(req, res)
 {
 	var singleDatasetMap = this._getDatasourceFromRequest(req,res);
 	singleDatasetMap = this._appendQueryUrlToDatasets(singleDatasetMap,req);
+	var searchTerm = decodeURIComponent( req.params.searchTerm );
 	this._doDatasetRequest( singleDatasetMap, res, req.params.searchTerm);
 }
 
@@ -75,7 +77,7 @@ ChScotUniformApi.prototype._appendQueryUrlToDatasets = function(dataSources,req)
 	var datasetsWithQueryString = {};
 	for (key in dataSources) {
 		var value = dataSources[key];
-		datasetsWithQueryString[ key ] = value+"&q="+queryString;
+		datasetsWithQueryString[ key ] = value+"&q="+encodeURIComponent(queryString);
     }
     return datasetsWithQueryString;
 }
@@ -161,7 +163,7 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 		
 
 			if (searchField != null && searchValue != null) {
-				if (dsObject[searchField] == searchValue) {
+				if ( dsObject[searchField] == decodeURIComponent(searchValue) ) {
 					appendToResponseJson.push( dsObject );
 				}
 			} else {

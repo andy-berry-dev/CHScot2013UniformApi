@@ -27,7 +27,13 @@ var ChScotUniformApi = function() {
 ChScotUniformApi.prototype.root = function(req, res)
 {
 	res.type('text/plain');
-	res.send('CHScot2013 Uniform API Version '+this.apiVersion);
+	res.write('CHScot2013 Uniform API Version '+this.apiVersion+"\n\n");
+	res.write("Valid API Calls:"+"\n\n");
+	res.write("/:dataset/"+"\n\n");
+	res.write("/q/:searchTerm/"+"\n\n");
+	res.write("/:dataset/q/:searchTerm/"+"\n\n");
+	res.write("/:dataset/:field/:value/"+"\n\n");
+	res.end();
 };
 
 
@@ -131,7 +137,6 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 
 
 		var appendToResponseJson = [];
-		appendToResponseJson = oJson;
 		for (key in oJson) {
 			var dsObject = oJson[key];
 
@@ -157,15 +162,16 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 
 			if (searchField != null && searchValue != null) {
 				if (dsObject[searchField] == searchValue) {
-					appendToResponseJson = dsObject;
+					appendToResponseJson.push( dsObject );
 				}
-				//console.log(appendToResponseJson);
+			} else {
+				appendToResponseJson.push( dsObject );
 			}
 
 		}
 
 		if (searchField != null && searchValue != null) {
-			responseJson = appendToResponseJson;
+			responseJson = responseJson.concat( appendToResponseJson );	
 		} else {
 			responseJson = responseJson.concat( appendToResponseJson );	
 		}

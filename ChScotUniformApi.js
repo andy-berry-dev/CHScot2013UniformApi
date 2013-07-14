@@ -99,7 +99,7 @@ ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res,searchTe
 }
 
 
-ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSources,res,key,value,searchTerm)
+ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSources,res,searchField,searchValue,searchTerm)
 {
 	var numberOfDatasets = 0;
 	var numberOfResponsesRecieved = 0;
@@ -129,6 +129,9 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 		var oJson = JSON.parse(jsonBody);
 		oJson = oJson[datasetKey];
 
+
+		var appendToResponseJson = [];
+		appendToResponseJson = oJson;
 		for (key in oJson) {
 			var dsObject = oJson[key];
 
@@ -150,9 +153,23 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 
 			dsObject["__dsName"] = datasetKey;
 			dsObject["__summary"] = summary;
+		
+
+			if (searchField != null && searchValue != null) {
+				if (dsObject[searchField] == searchValue) {
+					appendToResponseJson = dsObject;
+				}
+				//console.log(appendToResponseJson);
+			}
+
 		}
 
-		responseJson = responseJson.concat( oJson );
+		if (searchField != null && searchValue != null) {
+			responseJson = appendToResponseJson;
+		} else {
+			responseJson = responseJson.concat( appendToResponseJson );	
+		}
+
 		numberOfResponsesRecieved++;
 
 		if (numberOfResponsesRecieved == numberOfDatasets) 

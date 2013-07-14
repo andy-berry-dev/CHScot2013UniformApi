@@ -29,8 +29,4 @@ app.get( dataUrl+"/:dataset/q/:searchTerm", function(req,res){api.doSingleDatase
 app.get( dataUrl+"/:dataset/:field/:value/", function(req,res){api.lookupValue(req,res);} );
 
 
-//
-/* add __summary **/
-/* add __dsName **/
-
 app.listen(process.env.PORT || 8080);

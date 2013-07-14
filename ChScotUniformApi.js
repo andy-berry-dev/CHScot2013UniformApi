@@ -33,26 +33,26 @@ ChScotUniformApi.prototype.root = function(req, res)
 
 ChScotUniformApi.prototype.viewAllDatasets = function(req, res)
 {
-	this._doDatasetRequest(this.dataSources, res)	
+	this._doDatasetRequest(this.dataSources, res, "")	
 }
 
 ChScotUniformApi.prototype.viewDataset = function(req, res)
 {
 	var singleDatasetMap = this._getDatasourceFromRequest(req,res);
-	this._doDatasetRequest( singleDatasetMap, res);
+	this._doDatasetRequest( singleDatasetMap, res, "");
 }
 
 ChScotUniformApi.prototype.doSearch  = function(req, res)
 {
 	var datasetMap = this._appendQueryUrlToDatasets(this.dataSources,req);
-	this._doDatasetRequest( datasetMap, res);
+	this._doDatasetRequest( datasetMap, res, req.params.searchTerm);
 }
 
 ChScotUniformApi.prototype.doSingleDatasetSearch  = function(req, res)
 {
 	var singleDatasetMap = this._getDatasourceFromRequest(req,res);
 	singleDatasetMap = this._appendQueryUrlToDatasets(singleDatasetMap,req);
-	this._doDatasetRequest( singleDatasetMap, res);
+	this._doDatasetRequest( singleDatasetMap, res, req.params.searchTerm);
 }
 
 ChScotUniformApi.prototype.lookupValue  = function(req, res)
@@ -93,13 +93,13 @@ ChScotUniformApi.prototype._getDatasourceFromRequest = function(req,res)
 	return singleDatasetMap;
 }
 
-ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res)
+ChScotUniformApi.prototype._doDatasetRequest = function(dataSources,res,searchTerm)
 {
-	this._doDatasetRequestForKeyValuePair(dataSources,res,null,null);
+	this._doDatasetRequestForKeyValuePair(dataSources,res,null,null,searchTerm);
 }
 
 
-ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSources,res,key,value)
+ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSources,res,key,value,searchTerm)
 {
 	var numberOfDatasets = 0;
 	var numberOfResponsesRecieved = 0;
@@ -131,7 +131,22 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 
 		for (key in oJson) {
 			var dsObject = oJson[key];
+
+			var summary = searchTerm;
+			if (searchTerm != "") {
+				for (dsField in dsObject) {
+					dsFieldValue = dsObject[dsField].toLowerCase();
+					var searchTermIndex = dsFieldValue.indexOf(searchTerm)
+					if (searchTermIndex > -1) {
+						var summaryStart = Math.max(searchTermIndex-30, 0);
+						var summaryEnd = Math.max(searchTermIndex+30, dsFieldValue.length);
+						summary = dsFieldValue.substring(summaryStart, summaryEnd);
+					}
+				}
+			}
+
 			dsObject["__dsName"] = datasetKey;
+			dsObject["__summary"] = summary;
 		}
 
 		responseJson = responseJson.concat( oJson );

@@ -135,13 +135,14 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 			var summary = searchTerm;
 			if (searchTerm != "") {
 				for (dsField in dsObject) {
-					dsFieldValue = dsObject[dsField];
-					dsFieldValue = (dsFieldValue != null) ? dsFieldValue.toLowerCase() : dsFieldValue;
-					var searchTermIndex = dsFieldValue.indexOf(searchTerm)
-					if (searchTermIndex > -1) {
-						var summaryStart = Math.max(searchTermIndex-30, 0);
-						var summaryEnd = Math.max(searchTermIndex+30, dsFieldValue.length);
-						summary = dsFieldValue.substring(summaryStart, summaryEnd);
+					if (dsFieldValue != null) {
+						dsFieldValue = dsObject[dsField].toLowerCase();
+						var searchTermIndex = dsFieldValue.indexOf(searchTerm)
+						if (searchTermIndex > -1) {
+							var summaryStart = Math.max(searchTermIndex-30, 0);
+							var summaryEnd = Math.max(searchTermIndex+30, dsFieldValue.length);
+							summary = dsFieldValue.substring(summaryStart, summaryEnd);
+						}
 					}
 				}
 			}

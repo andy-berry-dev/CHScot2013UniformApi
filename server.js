@@ -26,11 +26,17 @@ app.get( '/', function(req,res) {
 	res.type('text/plain');
 	res.write('CHScot2013 Uniform API Version '+api.version+"\n\n");
 	res.write("Valid API Calls:"+"\n\n");
-	res.write(dataUrl+"  -  view all datasets\n");
-	res.write(dataUrl+"/:dataset/  -  view single dataset\n");
-	res.write(dataUrl+"/q/:searchTerm/  - search all datasets\n");
-	res.write(dataUrl+"/:dataset/q/:searchTerm/  -  search a single dataset\n" );
-	res.write(dataUrl+"/:dataset/:field/:value/  -  show entries in a single dataset where 'field' matches 'value'");
+	res.write(dataUrl+"     view all datasets\n");
+	res.write(dataUrl+"/:dataset/     view single dataset\n");
+	res.write(dataUrl+"/q/:searchTerm/    search all datasets\n");
+	res.write(dataUrl+"/:dataset/q/:searchTerm/     search a single dataset\n" );
+	res.write(dataUrl+"/:dataset/:field/:value/     show entries in a single dataset where 'field' matches 'value'");
+	res.write("\n");
+	res.write("\n");
+	res.write("Supported datasets:\n");
+	for (var datasetId in api.dataSources) {
+		res.write("id: "+datasetId+"     url: "+api.dataSources[datasetId]+"\n");
+	}
 	res.end();
 } );
 app.get( dataUrl+"/", function(req,res){api.viewAllDatasets(req,res);} );

@@ -1,12 +1,12 @@
 var url = require("url");
 var request = require('request');
 var util = require('util');
-
-
 var sys = require('sys');
 
+var pkgJson = require('./package.json');
+
 var ChScotUniformApi = function() {
-	this.apiVersion = require('./package.json').version;
+	this.version = pkgJson.version;
 	this.dataSources = {
 		"ad_contributors"					: 	"http://chs2013.herokuapp.com/ad_contributors.json?per_page=999999999",
 		"ad_tweets"							: 	"http://chs2013.herokuapp.com/ad_tweets.json?per_page=999999999",

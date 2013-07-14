@@ -180,6 +180,7 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 
 		if (numberOfResponsesRecieved == numberOfDatasets) 
 		{
+			res.type('application/json');
 			res.write( JSON.stringify(responseJson) );
 			res.end();
 		}

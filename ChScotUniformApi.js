@@ -114,7 +114,7 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 		dataSourcesReverseLookup[ value ] = key;
     }
 
-	var responseJson = {};
+	var responseJson = [];
 
 	var _this = this;
 	var concatenateDatasets = function(error, response, body) 
@@ -127,13 +127,18 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 
 		var jsonBody = body;
 		var oJson = JSON.parse(jsonBody);
-		responseJson[datasetKey] = oJson[datasetKey];
+		oJson = oJson[datasetKey];
+
+		for (key in oJson) {
+			var dsObject = oJson[key];
+			dsObject["__dsName"] = datasetKey;
+		}
+
+		responseJson = responseJson.concat( oJson );
 		numberOfResponsesRecieved++;
 
 		if (numberOfResponsesRecieved == numberOfDatasets) 
 		{
-			
-
 			res.write( JSON.stringify(responseJson) );
 			res.end();
 		}
@@ -164,7 +169,7 @@ ChScotUniformApi.prototype._doRequest = function(res, url, callback)
 			}
 		}
 		if (!hasValidCachedResponse) {
-			util.debug("No valid cached response");
+			util.debug("No valid cached response for " + url + " using cached content.");
 			util.debug("Doing GET for " + url);
 			request.get(url, function(error,response,body) {
 				_this._checkAndHandleRequestError(error,response,body,res);

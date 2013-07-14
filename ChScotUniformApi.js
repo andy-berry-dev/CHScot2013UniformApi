@@ -136,6 +136,7 @@ ChScotUniformApi.prototype._doDatasetRequestForKeyValuePair = function(dataSourc
 			if (searchTerm != "") {
 				for (dsField in dsObject) {
 					dsFieldValue = dsObject[dsField].toLowerCase();
+					dsFieldValue = (dsFieldValue != null) ? dsFieldValue.toLowerCase() : dsFieldValue;
 					var searchTermIndex = dsFieldValue.indexOf(searchTerm)
 					if (searchTermIndex > -1) {
 						var summaryStart = Math.max(searchTermIndex-30, 0);
